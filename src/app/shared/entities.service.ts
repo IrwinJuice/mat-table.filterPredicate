@@ -33,11 +33,24 @@ export interface Voyage {
   id?: number;
   departureDate: Date;
   route: DRMRoute;
+  seats: Seat[];
 }
 
+export interface Seat {
+  id?: number;
+  status: SeatStatus;
+}
+
+export enum SeatStatus {
+  AVAILABLE,
+  SOLD,
+  RESERVE,
+  UNAVAILABLE
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class EntitiesService {
+
 }

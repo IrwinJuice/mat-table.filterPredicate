@@ -50,6 +50,26 @@
         <td mat-cell *matCellDef="let row"> {{row.route.arrivalStation.name}} </td>
       </ng-container>
 
+      <ng-container matColumnDef="available">
+        <th mat-header-cell *matHeaderCellDef > AVAILABLE </th>
+        <td mat-cell *matCellDef="let row" > {{availableSeats(row.seats)}} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="sold">
+        <th mat-header-cell *matHeaderCellDef > SOLD </th>
+        <td mat-cell *matCellDef="let row" > {{soldSeats(row.seats)}} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="reserve">
+        <th mat-header-cell *matHeaderCellDef > RESERVE </th>
+        <td mat-cell *matCellDef="let row" > {{reserveSeats(row.seats)}} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="unavailable">
+        <th mat-header-cell *matHeaderCellDef > UNAVAILABLE </th>
+        <td mat-cell *matCellDef="let row" > {{unavailableSeats(row.seats)}} </td>
+      </ng-container>
+
       <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns;">
       </tr>

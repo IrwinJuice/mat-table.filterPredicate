@@ -1,7 +1,9 @@
 import {ChangeDetectionStrategy, Component, OnInit} from '@angular/core';
 import {MatTableDataSource} from '@angular/material/table';
-import {DRMRoute, Station, Voyage} from '../shared/entities.service';
+import {DRMRoute, Seat, SeatStatus, Station, Voyage} from '../shared/entities.service';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
+import {from, Observable} from 'rxjs';
+import {distinct, map, mergeMap, startWith, toArray} from 'rxjs/operators';
 
 @Component({
   selector: 'app-voyage-search-panel',
@@ -11,7 +13,7 @@ import {FormControl, FormGroup, Validators} from '@angular/forms';
 })
 export class VoyageSearchPanelComponent implements OnInit {
   public displayedColumns: string[] =
-    ['departureDate', 'departureStation', 'arrivalStation'];
+    ['departureDate', 'departureStation', 'arrivalStation', 'available', 'sold', 'reserve', 'unavailable'];
   public dataSource: MatTableDataSource<Voyage>;
 
   public searchForm: FormGroup;
@@ -84,6 +86,22 @@ export class VoyageSearchPanelComponent implements OnInit {
     const filterValue = this.departureDate + '$' + this.departureStation + '$' + this.arrivalStation;
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
+
+  availableSeats(seats: Seat[]): number {
+    return seats.filter(seat => seat.status === SeatStatus.AVAILABLE).length;
+  }
+
+  unavailableSeats(seats: Seat[]): number {
+    return seats.filter(seat => seat.status === SeatStatus.UNAVAILABLE).length;
+  }
+
+  soldSeats(seats: Seat[]): number {
+    return seats.filter(seat => seat.status === SeatStatus.SOLD).length;
+  }
+
+  reserveSeats(seats: Seat[]): number {
+    return seats.filter(seat => seat.status === SeatStatus.RESERVE).length;
+  }
 }
 
 const STATION: Station[] = [
@@ -144,26 +162,52 @@ const ROUTE_L_K: DRMRoute = {
   stationDTOList: [STATION[2], STATION[3]]
 };
 
+const SEATS_K_D: Seat[] = [
+  {id: 1, status: SeatStatus.AVAILABLE},
+  {id: 2, status: SeatStatus.AVAILABLE},
+  {id: 3, status: SeatStatus.AVAILABLE},
+  {id: 4, status: SeatStatus.AVAILABLE},
+  {id: 5, status: SeatStatus.AVAILABLE},
+  {id: 6, status: SeatStatus.AVAILABLE},
+  {id: 7, status: SeatStatus.AVAILABLE},
+  {id: 8, status: SeatStatus.UNAVAILABLE},
+  {id: 9, status: SeatStatus.UNAVAILABLE},
+  {id: 10, status: SeatStatus.SOLD},
+  {id: 11, status: SeatStatus.SOLD},
+  {id: 12, status: SeatStatus.RESERVE},
+];
+const SEATS_L_K: Seat[] = [
+  {id: 13, status: SeatStatus.AVAILABLE},
+  {id: 14, status: SeatStatus.AVAILABLE},
+  {id: 15, status: SeatStatus.AVAILABLE},
+  {id: 16, status: SeatStatus.AVAILABLE},
+  {id: 17, status: SeatStatus.AVAILABLE},
+  {id: 18, status: SeatStatus.UNAVAILABLE},
+  {id: 19, status: SeatStatus.UNAVAILABLE},
+  {id: 20, status: SeatStatus.SOLD},
+  {id: 21, status: SeatStatus.SOLD},
+  {id: 22, status: SeatStatus.RESERVE},
+];
 
 const VOYAGES: Voyage[] = [
-  {id: 1, departureDate: new Date('2020-01-16'), route: ROUTE_P_S},
-  {id: 2, departureDate: new Date('2020-01-16'), route: ROUTE_L_K},
-  {id: 3, departureDate: new Date('2020-01-17'), route: ROUTE_K_D},
-  {id: 4, departureDate: new Date('2020-01-17'), route: ROUTE_L_K},
-  {id: 5, departureDate: new Date('2020-01-19'), route: ROUTE_U_K},
-  {id: 6, departureDate: new Date('2020-01-19'), route: ROUTE_L_K},
-  {id: 7, departureDate: new Date('2020-01-20'), route: ROUTE_K_D},
-  {id: 8, departureDate: new Date('2020-01-20'), route: ROUTE_P_S},
-  {id: 9, departureDate: new Date('2020-01-22'), route: ROUTE_U_K},
-  {id: 11, departureDate: new Date('2020-01-22'), route: ROUTE_L_K},
-  {id: 12, departureDate: new Date('2020-01-24'), route: ROUTE_K_D},
-  {id: 13, departureDate: new Date('2020-01-24'), route: ROUTE_L_K},
-  {id: 14, departureDate: new Date('2020-01-26'), route: ROUTE_K_D},
-  {id: 15, departureDate: new Date('2020-01-26'), route: ROUTE_L_K},
-  {id: 16, departureDate: new Date('2020-01-28'), route: ROUTE_U_K},
-  {id: 17, departureDate: new Date('2020-01-28'), route: ROUTE_L_K},
-  {id: 18, departureDate: new Date('2020-01-27'), route: ROUTE_P_S},
-  {id: 19, departureDate: new Date('2020-01-27'), route: ROUTE_P_S},
-  {id: 20, departureDate: new Date('2020-01-23'), route: ROUTE_K_D},
-  {id: 21, departureDate: new Date('2020-01-23'), route: ROUTE_P_S},
+  {id: 1, departureDate: new Date('2020-01-16'), route: ROUTE_P_S, seats: SEATS_K_D},
+  {id: 2, departureDate: new Date('2020-01-16'), route: ROUTE_L_K, seats: SEATS_L_K},
+  {id: 3, departureDate: new Date('2020-01-17'), route: ROUTE_K_D, seats: SEATS_K_D},
+  {id: 4, departureDate: new Date('2020-01-17'), route: ROUTE_L_K, seats: SEATS_L_K},
+  {id: 5, departureDate: new Date('2020-01-19'), route: ROUTE_U_K, seats: SEATS_K_D},
+  {id: 6, departureDate: new Date('2020-01-19'), route: ROUTE_L_K, seats: SEATS_L_K},
+  {id: 7, departureDate: new Date('2020-01-20'), route: ROUTE_K_D, seats: SEATS_K_D},
+  {id: 8, departureDate: new Date('2020-01-20'), route: ROUTE_P_S, seats: SEATS_L_K},
+  {id: 9, departureDate: new Date('2020-01-22'), route: ROUTE_U_K, seats: SEATS_K_D},
+  {id: 11, departureDate: new Date('2020-01-22'), route: ROUTE_L_K, seats: SEATS_L_K},
+  {id: 12, departureDate: new Date('2020-01-24'), route: ROUTE_K_D, seats: SEATS_K_D},
+  {id: 13, departureDate: new Date('2020-01-24'), route: ROUTE_L_K, seats: SEATS_L_K},
+  {id: 14, departureDate: new Date('2020-01-26'), route: ROUTE_K_D, seats: SEATS_K_D},
+  {id: 15, departureDate: new Date('2020-01-26'), route: ROUTE_L_K, seats: SEATS_L_K},
+  {id: 16, departureDate: new Date('2020-01-28'), route: ROUTE_U_K, seats: SEATS_K_D},
+  {id: 17, departureDate: new Date('2020-01-28'), route: ROUTE_L_K, seats: SEATS_L_K},
+  {id: 18, departureDate: new Date('2020-01-27'), route: ROUTE_P_S, seats: SEATS_K_D},
+  {id: 19, departureDate: new Date('2020-01-27'), route: ROUTE_P_S, seats: SEATS_L_K},
+  {id: 20, departureDate: new Date('2020-01-23'), route: ROUTE_K_D, seats: SEATS_K_D},
+  {id: 21, departureDate: new Date('2020-01-23'), route: ROUTE_P_S, seats: SEATS_L_K},
 ];
